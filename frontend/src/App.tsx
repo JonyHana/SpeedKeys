@@ -5,7 +5,9 @@ function App() {
   let [sentence, setSentence] = useState<string>();
   
   const grabSentenceFromServer = () => {
-    setSentence('The quick brown fox jumps over the lazy dog.'.repeat(10));
+    let grabbed = 'The quick brown fox jumps over the lazy dog. '.repeat(2);
+    grabbed = grabbed.substring(0, grabbed.length - 1);
+    setSentence(grabbed);
   }
   
   // TODO: replace with react query.
