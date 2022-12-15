@@ -10,7 +10,6 @@ function App() {
     setSentence(grabbed);
   }
   
-  // TODO: replace with react query.
   useEffect(() => {
     grabSentenceFromServer();
   }, []);

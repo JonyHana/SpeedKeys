@@ -29,7 +29,6 @@ const TypeBox = ({ sentence }: TypeBoxProp) => {
     let match = sentence.substring(currentWordIndex, currentWordIndex + len);
 
     let delimiter = sentence.indexOf(' ', currentWordIndex);
-    console.log(currentWordIndex, delimiter);
     delimiter = (delimiter === -1) ? sentence.length - 1 : delimiter;
     let word = sentence.substring(currentWordIndex, delimiter + 1);
 
@@ -56,8 +55,7 @@ const TypeBox = ({ sentence }: TypeBoxProp) => {
     else {
       console.log('nope');
     }
-
-    // (RESUME)
+    
     if (txt === match) {
       console.log('setCursorCorrectIndex');
       setCursorCorrectIndex(currentWordIndex + len);
@@ -65,6 +63,10 @@ const TypeBox = ({ sentence }: TypeBoxProp) => {
     }
     else {
       console.log('setCursorIncorrectIndex');
+      if (cursorCorrectIndex >= currentWordIndex + len) {
+        console.log('erased');
+        setCursorCorrectIndex(currentWordIndex + len - 1);
+      }
       setCursorIncorrectIndex(currentWordIndex + len);
     }
     
@@ -107,7 +109,16 @@ const TypeBox = ({ sentence }: TypeBoxProp) => {
         className='cursor-default'
         ref={inputRef}
         value={inputText}
-        disabled={isInputDisabled} />
+        disabled={isInputDisabled}
+        onCopy={(e) => {e.preventDefault(); return false;}}
+        onPaste={(e) => {e.preventDefault(); return false;}}
+        onKeyDown={(e) => {
+          if(["ArrowUp","ArrowDown","ArrowLeft","ArrowRight"].indexOf(e.code) > -1) {
+            e.preventDefault();
+            return false;
+          }
+        }}
+        />
     </div>
   )
 }
