@@ -32,49 +32,42 @@ const TypeBox = ({ sentence }: TypeBoxProp) => {
     delimiter = (delimiter === -1) ? sentence.length - 1 : delimiter;
     let word = sentence.substring(currentWordIndex, delimiter + 1);
 
-    console.log('word', word, word.length, '; ', txt, txt.length);
+    //console.log('word', word, word.length, '; ', txt, txt.length);
 
     if (txt === match) {
-      console.log('ok');
-
       if (txt === word) {
         setInputText('');
         
         if (delimiter + 1 === sentence.length) {
-          console.log('game finished');
+          //console.log('game finished');
           setIsInputDisabled(true);
         }
         else {
           setCurrentWordIndex(delimiter + 1);
           setCursorCorrectIndex(currentWordIndex);
           setCursorIncorrectIndex(currentWordIndex);
-          console.log('matched\nnew position', currentWordIndex, sentence[currentWordIndex]);
+          //console.log('matched\nnew position', currentWordIndex, sentence[currentWordIndex]);
         }
       }
-    }
-    else {
-      console.log('nope');
-    }
-    
-    if (txt === match) {
-      console.log('setCursorCorrectIndex');
+
+      //console.log('setCursorCorrectIndex');
       setCursorCorrectIndex(currentWordIndex + len);
       setCursorIncorrectIndex(currentWordIndex + len);
     }
     else {
-      console.log('setCursorIncorrectIndex');
+      //console.log('setCursorIncorrectIndex');
       if (cursorCorrectIndex >= currentWordIndex + len) {
-        console.log('erased');
+        //console.log('erased');
         setCursorCorrectIndex(currentWordIndex + len - 1);
       }
       setCursorIncorrectIndex(currentWordIndex + len);
     }
     
-    console.log(cursorCorrectIndex, sentence.substring(0, cursorCorrectIndex));
+    //console.log(cursorCorrectIndex, sentence.substring(0, cursorCorrectIndex));
   }
 
   const handleClick = () => {
-    console.log('handleClick');
+    //console.log('handleClick');
     if (inputRef.current)
       inputRef.current.focus();
     else
