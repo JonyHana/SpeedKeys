@@ -1,117 +1,114 @@
-import { ChangeEvent, useEffect, useRef, useState } from "react";
+import { ChangeEvent, useEffect, useState } from "react";
 
 type TypeBoxProp = {
   sentence: string;
 };
 
+const STATUS_COLORS: { [index: number]: string } = {
+  0: 'text-neutral-400',
+  1: 'text-lime-400',
+  2: 'text-red-400',
+}
+
 const TypeBox = ({ sentence }: TypeBoxProp) => {
-  const [incompleteText, setIncompleteText] = useState<string>('');
-  const [correctText, setCorrectText] = useState<string>('');
-  const [incorrectText, setIncorrectText] = useState<string>('');
-
+  const [words, setWords] = useState<string[]>([]);
   const [inputText, setInputText] = useState<string>('');
-  const [isInputDisabled, setIsInputDisabled] = useState<boolean>(false);
 
-  const inputRef = useRef<HTMLInputElement>(null);
-
+  //const [cursorIndex, setCursorIndex] = useState<number>(0); // currentWordIndex + len
   const [currentWordIndex, setCurrentWordIndex] = useState<number>(0);
-  const [cursorCorrectIndex, setCursorCorrectIndex] = useState<number>(0);
-  const [cursorIncorrectIndex, setCursorIncorrectIndex] = useState<number>(0);
-  
-  const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
-    console.log('handleInputChange');
+  //const [cursorCorrectIndex, setCursorCorrectIndex] = useState<number>(0);
+  // 0 = incomplete, 1 = correct, 2 = incorrect
+  // Letters will be compared to position index in sentence prop.
+  const [lettersStatus, setLettersStatus] = useState<number[]>([]);
+  // Highlighting from left to cursorIndex.
+  const [highlightIndex, setHighlightIndex] = useState<number>(0);
 
-    setInputText(e.target.value);
-
-    let txt = e.target.value;
-    let len = txt.length;
-
-    let match = sentence.substring(currentWordIndex, currentWordIndex + len);
-
-    let delimiter = sentence.indexOf(' ', currentWordIndex);
-    delimiter = (delimiter === -1) ? sentence.length - 1 : delimiter;
-    let word = sentence.substring(currentWordIndex, delimiter + 1);
-
-    //console.log('word', word, word.length, '; ', txt, txt.length);
-
-    if (txt === match) {
-      if (txt === word) {
-        setInputText('');
-        
-        if (delimiter + 1 === sentence.length) {
-          //console.log('game finished');
-          setIsInputDisabled(true);
-        }
-        else {
-          setCurrentWordIndex(delimiter + 1);
-          setCursorCorrectIndex(currentWordIndex);
-          setCursorIncorrectIndex(currentWordIndex);
-          //console.log('matched\nnew position', currentWordIndex, sentence[currentWordIndex]);
-        }
-      }
-
-      //console.log('setCursorCorrectIndex');
-      setCursorCorrectIndex(currentWordIndex + len);
-      setCursorIncorrectIndex(currentWordIndex + len);
-    }
-    else {
-      //console.log('setCursorIncorrectIndex');
-      if (cursorCorrectIndex >= currentWordIndex + len) {
-        //console.log('erased');
-        setCursorCorrectIndex(currentWordIndex + len - 1);
-      }
-      setCursorIncorrectIndex(currentWordIndex + len);
+  useEffect(() => {
+    let wordsArr: string[] = sentence.split(' ');
+    let setWordsArr: string[] = wordsArr.map((word, key) => {
+      //console.log(word, key, wordsArr.length);
+      return (key !== wordsArr.length - 1) ? word + '\u00A0' : word;
+    })
+    //console.log(setWordsArr);
+    
+    let ltrsStatInit: number[] = [];
+    for (let i: number = 0; i < sentence.length; i++) {
+      ltrsStatInit.push(0);
     }
     
-    //console.log(cursorCorrectIndex, sentence.substring(0, cursorCorrectIndex));
-  }
-
-  const handleClick = () => {
-    //console.log('handleClick');
-    if (inputRef.current)
-      inputRef.current.focus();
-    else
-      console.log('[E] could not get input.');
-  }
-  
-  useEffect(() => {
-    setIncompleteText(sentence);
+    setLettersStatus(ltrsStatInit);
+    setWords(setWordsArr);
   }, []);
 
-  useEffect(() => {
-    setCorrectText(sentence.substring(0, cursorCorrectIndex));
-    setIncompleteText(
-      sentence.substring(
-        (cursorCorrectIndex > cursorIncorrectIndex) ? cursorCorrectIndex : cursorIncorrectIndex,
-        sentence.length)
+  const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
+    let inTxt: string = e.target.value;
+    let len: number = inTxt.length;
+
+    if (len > sentence.length) {
+      return false;
+    }
+
+    setInputText(inTxt);
+
+    let cursor = currentWordIndex + len;
+    //setCursorIndex(len);
+
+    //console.log(cursorCorrectIndex, len);
+    
+    setLettersStatus(
+      lettersStatus.map((status, index, arr) => {
+        if (index >= cursor) return 0;
+        if (index < currentWordIndex) return 0; // NOTE: temporarily 0, make this 1 later.
+        
+        let letter: string = sentence[index];
+        let letter2: string = inTxt[index];
+
+        return (letter === letter2) ? 1 : 2;
+      })
     );
-    setIncorrectText(sentence.substring(cursorCorrectIndex, cursorIncorrectIndex));
-  }, [currentWordIndex, cursorCorrectIndex, cursorIncorrectIndex]);
+    
+    // (RESUME)
+    // TODO: check if word matches. also, this seems like it'd be good for setting letter status.
+    let wordFill = sentence.substring(currentWordIndex, currentWordIndex + len);
+    console.log(inTxt, wordFill, inTxt === wordFill);
+    
+    if (inTxt === wordFill) {
+      if (len < sentence.length - 1) {
+        console.log('game end');
+      }
+      else if (inTxt[len] === ' ') {
+        console.log('word?');
+      }
+    }
+  }
   
-  // NOTE: make sure to give invisible input the class 'opacity-0' when done testing.
   return (
     <div className="w-5/12">
-      <div onClick={handleClick} className="bg-neutral-900 text-gray-300 w-auto text-2xl p-3 rounded-lg select-none">
-        <span className="text-lime-400">{correctText}</span>
-        <span className="text-red-400">{incorrectText}</span>
-        <span>{incompleteText}</span>
+      <div className="bg-neutral-900 w-auto text-2xl p-3 rounded-lg">
+        {words &&
+          (() => {
+            let slength = 0;
+            return words.map((word, wkey) => {
+              slength += word.length;
+              let letters: string[] = [...word];
+              return (<span className='word inline-block' key={wkey}>
+                {letters.map((letter, lkey) => {
+                  let statusColor = STATUS_COLORS[lettersStatus[(slength - word.length) + lkey]];
+                  return <span className={`letter ${statusColor}`} key={lkey}>{letter}</span>
+                })}
+              </span>);
+            })
+          })()
+        }
       </div>
       <input
         type='text'
-        onChange={handleInputChange}
-        className='cursor-default'
-        ref={inputRef}
+        /* className='opacity-0 cursor-default' */
         value={inputText}
-        disabled={isInputDisabled}
-        onCopy={(e) => {e.preventDefault(); return false;}}
-        onPaste={(e) => {e.preventDefault(); return false;}}
-        onKeyDown={(e) => {
-          if(["ArrowUp","ArrowDown","ArrowLeft","ArrowRight"].indexOf(e.code) > -1) {
-            e.preventDefault();
-            return false;
-          }
-        }}
-        />
+        onChange={handleInputChange}
+        onCopy={(e) => { e.preventDefault(); return false; }}
+        onPaste={(e) => { e.preventDefault(); return false; }}
+      />
     </div>
   )
 }
