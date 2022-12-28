@@ -4,11 +4,18 @@ type TypeBoxProp = {
   sentence: string;
 };
 
-const STATUS_COLORS: { [index: number]: string } = {
+const TEXT_STATUS_COLORS: { [index: number]: string } = {
   0: 'text-neutral-400',
   1: 'text-lime-400',
   2: 'text-red-400',
   4: 'text-neutral-300',
+}
+
+const BG_STATUS_COLORS: { [index: number]: string } = {
+  0: 'bg-neutral-400',
+  1: 'bg-lime-400',
+  2: 'bg-red-400',
+  4: 'bg-lime-300',
 }
 
 const TypeBox = ({ sentence }: TypeBoxProp) => {
@@ -28,8 +35,8 @@ const TypeBox = ({ sentence }: TypeBoxProp) => {
 
   // TypeBox initialization
   useEffect(() => {
-    let wordsArr = sentence.split(' ');
-    let setWordsArr = wordsArr.map((word, key) => {
+    const wordsArr = sentence.split(' ');
+    const setWordsArr = wordsArr.map((word, key) => {
       //console.log(word, key, wordsArr.length);
       return (key !== wordsArr.length - 1) ? word + ' ' : word;
     })
@@ -49,8 +56,9 @@ const TypeBox = ({ sentence }: TypeBoxProp) => {
     // To make sure lettersStatus has been initialized.
     if (lettersStatus.length === 0) return;
 
-    let localCursorIndex = inputText.length;
-    let wordFill = words[currentWordIndex].substring(0, localCursorIndex);
+    const localCursorIndex = inputText.length;
+    //let wordFill = words[currentWordIndex].substring(0, localCursorIndex);
+    let localCursorIndex2 = 0;
 
     setLettersStatus(
       lettersStatus.map((status, index, arr) => {
@@ -59,7 +67,12 @@ const TypeBox = ({ sentence }: TypeBoxProp) => {
         if (index >= baseCursorIndex + localCursorIndex) return 0;
         if (index < baseCursorIndex) return 4;
         
-        return (inputText === wordFill) ? 1 : 2;
+        const ltr1 = sentence[index];
+        const ltr2 = inputText[localCursorIndex2];
+        localCursorIndex2++;
+        
+        return (ltr1 === ltr2) ? 1 : 2;
+        //return (inputText === wordFill) ? 1 : 2;
       })
     );
   }, [inputText]);
@@ -108,7 +121,7 @@ const TypeBox = ({ sentence }: TypeBoxProp) => {
       console.log('wrong');
     }*/
   }
-
+  
   const handleClick = (e: MouseEvent<HTMLDivElement>) => {
     if (inputBoxRef && inputBoxRef.current)
       inputBoxRef.current.focus();
@@ -118,18 +131,31 @@ const TypeBox = ({ sentence }: TypeBoxProp) => {
   
   return (
     <div className="w-5/12" onClick={handleClick}>
-      <div className="bg-neutral-900 w-auto text-2xl p-3 rounded-lg">
+      <div className="bg-neutral-900 w-auto text-3xl p-3 rounded-lg">
         {words &&
           (() => {
             let slength = 0;
             return words.map((word, wkey) => {
               slength += word.length;
-              let letters = [...word];
+              const letters = [...word];
               return (
                 <span className='word inline-block' key={wkey}>
                   {letters.map((letter, lkey) => {
-                    let statusColor = STATUS_COLORS[lettersStatus[(slength - word.length) + lkey]];
-                    let ltr = (letter === ' ' ? '\u00A0' : letter);
+                    const globIndex = (slength - word.length) + lkey;
+                    const ltr = (letter === ' ' ? '\u00A0' : letter);
+                    let statusColor = TEXT_STATUS_COLORS[lettersStatus[globIndex]];
+                    
+                    // Need to color background of whitespace since text coloring won't work for it.
+                    if (inputText.length > 0 && (globIndex === baseCursorIndex + inputText.length - 1) && letter === ' ') {
+                      statusColor = BG_STATUS_COLORS[lettersStatus[globIndex]];
+                    }
+                    
+                    // Mimicks a text cursor.
+                    // Bug: Does not account for input text cursor. Using left and right arrow can break this.
+                    if (baseCursorIndex + inputText.length === globIndex) {
+                      statusColor += ' bg-slate-700';
+                    }
+                    
                     return (
                       <span className={`letter ${statusColor}`} key={lkey}>{ltr}</span>
                     );

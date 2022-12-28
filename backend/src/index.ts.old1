@@ -1,0 +1,53 @@
+import 'dotenv/config';
+
+import express, { Request, Response } from 'express';
+import { PrismaClient } from '@prisma/client';
+
+const app = express();
+const prisma = new PrismaClient();
+
+const port = process.env.PORT;
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+app.get('/', async (req: Request, res: Response) => {
+  res.status(200).json('Index page.');
+});
+
+app.get('/typeracer', async (req: Request, res: Response) => {
+});
+
+app.get('/usertest', async (req: Request, res: Response) => {
+  let userData = {
+    data: {
+      name: 'Alice',
+      email: 'alice@prisma.io',
+      isAdmin: false,
+    }
+  }
+  
+  let jsonData = {};
+
+  const userFind = await prisma.user.findUnique({
+    where: { email: userData.data.email }
+  });
+  console.log('userFind', userFind);
+
+  if (userFind !== null) {
+    const userDel = await prisma.user.delete({ where: { email: userData.data.email }});
+    console.log('userDel', userDel);
+    jsonData = {msg: 'Deleted user.', userDel};
+  }
+  else {
+    const userCreate = await prisma.user.create(userData);
+    console.log('userCreate', userCreate);
+    jsonData = {msg: 'Created new user.', userCreate};
+  }
+
+  res.status(200).json(jsonData);
+});
+
+app.listen(port, () => {
+  console.log(`[server]: Server is running at https://localhost:${port}`);
+});

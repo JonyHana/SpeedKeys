@@ -1,7 +1,14 @@
+@import url('https://fonts.googleapis.com/css2?family=Inconsolata:wght@500&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 html, body {
     background-color: #333;
+}
+
+/* Each letter in a monospaced font occupies the same amount of space, which is what I want for the cursor. */
+.word {
+    font-family: 'Inconsolata', monospace;
 }
