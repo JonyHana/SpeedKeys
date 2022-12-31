@@ -8,17 +8,31 @@ const prisma = new PrismaClient();
 
 const port = process.env.PORT;
 
+// parses "application/json" POST data
 app.use(express.json());
+// parses "application/x-www-form-urlencoded" POST data
 app.use(express.urlencoded({ extended: true }));
 
 app.get('/', async (req: Request, res: Response) => {
   res.status(200).json('Index page.');
 });
 
-app.get('/typeracer', async (req: Request, res: Response) => {
+app.get('/api/practice', async (req: Request, res: Response) => {
+  // init socket
 });
 
-app.get('/usertest', async (req: Request, res: Response) => {
+app.post('/api/register', async (req: Request, res: Response) => {
+  let userData = {
+    data: {
+      name: req.body.name,
+      email: req.body.email,
+      //isAdmin: false
+    }
+  };
+});
+
+/*
+app.get('/api/usertest', async (req: Request, res: Response) => {
   let userData = {
     data: {
       name: 'Alice',
@@ -47,6 +61,7 @@ app.get('/usertest', async (req: Request, res: Response) => {
 
   res.status(200).json(jsonData);
 });
+*/
 
 app.listen(port, () => {
   console.log(`[server]: Server is running at https://localhost:${port}`);

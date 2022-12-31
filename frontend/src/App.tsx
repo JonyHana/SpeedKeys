@@ -4,6 +4,8 @@ import Navbar from "./components/Navbar";
 import TypingPractice from "./components/page/TypePractice";
 import Home from "./components/page/Home";
 
+import SocketTest from "./components/page/SocketTest";
+
 function App() {
   return (
     <>
@@ -11,6 +13,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/practice" element={<TypingPractice />} />
+        <Route path="/testsocket" element={<SocketTest />} />
         <Route path="*" element={<span style={{color:'#f00'}}>404 Page Not Found</span>} />
       </Routes>
     </>

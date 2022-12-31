@@ -16,6 +16,8 @@ frontend/node_modules
 frontend/dist
 frontend/dist-ssr
 frontend/*.local
+# Keep environment variables out of version control
+frontend/.env
 
 # Editor directories and files
 .vscode
