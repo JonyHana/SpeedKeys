@@ -4,16 +4,9 @@ import { Link } from "react-router-dom";
 const SocketTest = () => {
   const socket = useRef<WebSocket | null>(null);
   const [msgFieldEvent, setMsgFieldEvent] = useState<string>('init');
-  //const [msgFieldActions, setMsgFieldActions] = useState<string>('');
 
   const handleClick = (e: MouseEvent<HTMLButtonElement>) => {
     try {
-      /*socket.current?.send(
-        JSON.stringify({
-          event: msgFieldEvent,
-          actions: JSON.parse(msgFieldActions)
-        })
-      );*/
       socket.current?.send(msgFieldEvent);
     }
     catch (e) {
@@ -22,19 +15,8 @@ const SocketTest = () => {
     }
   }
   
-  /*const handleChange_MsgEvent = (e: ChangeEvent<HTMLInputElement>) => {
-    setMsgEvent(e.target.value);
-  }
-  const handleChange_MsgActions(e: ChangeEvent<HTMLTextAreaElement>) => {
-    setMsgActions(e.target.value);
-  }*/
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-    if (e.target.name === 'event') { // event field
-      setMsgFieldEvent(e.target.value);
-    }
-    /*else { // actions field
-      setMsgFieldActions(e.target.value);
-    }*/
+    setMsgFieldEvent(e.target.value);
   }
 
   useEffect(() => {

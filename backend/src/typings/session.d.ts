@@ -1,7 +1,9 @@
 import "express-session";
 
 type GameSession = {
-  status: 'init' | 'progress';
+  status: 'init' | 'starting' | 'progress';
+  progress?: 0;
+  countdown?: 0;
 };
 
 declare module "express-session" {

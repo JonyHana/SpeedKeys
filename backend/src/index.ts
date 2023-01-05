@@ -18,12 +18,11 @@ const wss = new WebSocketServer({
 
 const sessionParser = session({
   secret: process.env.SESSION_SECRET_KEY,
-  // cookie: {
-  //   maxAge: 365 * 24 * 60 * 60,
-  //   secure: (process.env.NODE_ENV === 'production'),
-  //   sameSite: 'strict', //(process.env.NODE_ENV === 'production' ? 'none' : 'lax')
-  // },
-  
+  cookie: {
+    maxAge: (365 * 24 * 60 * 60) * 1000,
+    secure: (process.env.NODE_ENV === 'production'),
+    sameSite: 'strict', //(process.env.NODE_ENV === 'production' ? 'none' : 'lax')
+  },
   resave: false,
   saveUninitialized: false
 });
@@ -65,42 +64,62 @@ app.get('/api/example', (req: Request, res: Response) => {
 
 app.get('/api/debugsession', (req: Request, res: Response) => {
   req.session.randomVarTest = (!req.session.randomVarTest ? 'test123' : undefined);
+  console.log(req.sessionID, req.session);
   res.status(200).json(req.session);
 });
 
 wss.on('connection', (sock: WebSocket, req: Request) => {
-  //sock.id = 'unique_id_here_1234'; // NOTE: use req.session.game.id instead (using express-session).
   console.log(`[ws] new user has connected: ${req.sessionID}`);
 
+  console.log(req.session);
+
+  req.session.game = {
+    status: 'init'
+  };
+  
   sock.on('message', (message: RawData) => {
+    if (!req.session.game) {
+      console.log(`[ws] ERR: req.session.game doesn\'t exist for ${req.sessionID}`);
+      //sock.send('error_init');
+      return;
+    }
+
     const gameEvent = message.toString();
 
     console.log(`[ws] ${req.sessionID} sent: ${gameEvent}`);
 
-    if (gameEvent === 'init') {
-      // if (req.session.game.status !== 'init') return;
-      //req.session.game.progress = 0;
+    if (gameEvent === 'starting') {
+      if (req.session.game.status !== 'init') return;
       
-      // DEBUG: send a REST request while this is happening to see if I'm getting a response or if this completely blocks thread.
-      //  NOTE: this gets called multiple times if a user refreshes or a new user joins.
-      /*let counter = 10;
-      wss.clients.forEach(c => c.send('counting down from 10..'));
-      let WinnerCountdown = setInterval(function(){
-        //io.sockets.emit('counter', counter);
-        wss.clients.forEach(c => c.send(counter));
-        counter--;
+      req.session.game = {
+        status: 'starting',
+        countdown: 0,
+      };
+
+      // TODO: countdown for "starting" event, then set timer after finished counting down.
+      
+      //sock.send('starting');
+      
+      let counter = 5;
+      let gameCountdown = setInterval(() => {
+        sock.send('CD:' + counter);
         if (counter === 0) {
-          //io.sockets.emit('counter', "Congratulations You WON!!");
-          wss.clients.forEach(c => c.send('congrats! counter is now 0'));
-          clearInterval(WinnerCountdown);
+          clearInterval(gameCountdown);
         }
-      }, 1000);*/
+        else {
+          counter--;
+        }
+      }, 1000);
     }
     else if (gameEvent === 'progress') {
-      //req.session.game.progress++;
+      if (req.session.game.progress) {
+        req.session.game.progress++;
+        sock.send('progress');
+      }
+      /*else {
+        sock.send('error_progress');
+      }*/
     }
-
-    sock.send('[ws] ok');
   });
 
   sock.on('close', () => {
