@@ -2,6 +2,7 @@ import { ChangeEvent, useEffect, useState, useRef, MouseEvent } from "react";
 
 type TypeBoxProp = {
   sentence: string;
+  enabled: boolean;
 };
 
 const TEXT_STATUS_COLORS: { [index: number]: string } = {
@@ -18,10 +19,10 @@ const BG_STATUS_COLORS: { [index: number]: string } = {
   4: 'bg-lime-300',
 }
 
-const TypeBox = ({ sentence }: TypeBoxProp) => {
+const TypeBox = ({ sentence, enabled }: TypeBoxProp) => {
   const [words, setWords] = useState<string[]>([]);
   const [inputText, setInputText] = useState<string>('');
-  const [inputDisabled, setInputDisabled] = useState<boolean>(false);
+  const [inputDisabled, setInputDisabled] = useState<boolean>(enabled);
 
   const inputBoxRef = useRef<HTMLInputElement>(null);
   
@@ -32,6 +33,11 @@ const TypeBox = ({ sentence }: TypeBoxProp) => {
   const [lettersStatus, setLettersStatus] = useState<number[]>([]);
   // Highlighting from left to cursorIndex.
   //const [highlightIndex, setHighlightIndex] = useState<number>(0);
+
+  useEffect(() => {
+    setInputDisabled(!enabled);
+    console.log('TypeBox.setInputDisabled');
+  }, [enabled]);
 
   // TypeBox initialization
   useEffect(() => {
