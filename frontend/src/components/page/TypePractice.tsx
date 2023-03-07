@@ -7,20 +7,28 @@ const TypePage = () => {
   const [countdown, setCountdown] = useState<number>();
   const [timeLeft, setTimeLeft] = useState<number>(0);
   const socket = useRef<WebSocket | null>(null);
+  const baseCursorIndexRef = useRef<number>(0);
+
+  let timeLeftInterval: number; // Note: This is probably not safe.
 
   useEffect(() => {
-    //if (typeof sentence === 'undefined') return;
+    if (typeof sentence === 'undefined') return;
     console.log('sentence provided: ' + sentence);
   }, [sentence]);
 
   useEffect(() => {
-    //if (typeof countdown === 'undefined') return;
+    if (typeof countdown === 'undefined') return;
     console.log('counting down: ' + countdown);
   }, [countdown]);
 
+  // NOTE: This should only run once.
+  //  The server doesn't need to remind on timeleft. It'll let the user know when time expires.
   useEffect(() => {
-    //if (typeof timeLeft === 'undefined') return;
-    console.log('time left: ' + timeLeft);
+    if (typeof timeLeft === 'undefined' || timeLeft === 0) return;
+    
+    console.log('start, time left: ' + timeLeft);
+
+    timeLeftInterval = setInterval(sendProgress, 1000);
   }, [timeLeft]);
   
   useEffect(() => {
@@ -31,11 +39,12 @@ const TypePage = () => {
       });
     }
     else { // on component mount
-      socket.current = new WebSocket('ws://localhost:8080') // NOTE: make sure to use wss:// instead of ws:// in production
+      // Reminder: Make sure to use wss:// instead of ws:// in production.
+      socket.current = new WebSocket('ws://localhost:8080')
 
       socket.current.onopen = (event: Event) => {
         //console.log("[WebSocket] Connection established. Sending to server..");
-        socket.current?.send('starting');
+        socket.current?.send(JSON.stringify({ event: 'starting' }));
       };
       
       socket.current.onmessage = (event: MessageEvent<string>) => {
@@ -55,6 +64,8 @@ const TypePage = () => {
             console.log(data);
             setTimeLeft(data.timeLeft);
             break;
+          case 'game_over':
+            clearInterval(timeLeftInterval);
           /*case 'progress':
             break;*/
         }
@@ -77,12 +88,17 @@ const TypePage = () => {
       };*/
     }
   }, []);
+  
+  const sendProgress = () => {
+    console.log('send progress; baseCursorIndexRef.current = ', baseCursorIndexRef.current);
+    socket.current?.send(JSON.stringify({ event: 'progress', baseCursorIndex: baseCursorIndexRef.current }));
+  }
 
   return (
     <div className="h-screen w-screen">
       <div className="grid h-screen place-items-center">
         {sentence &&
-          <TypeBox sentence={sentence} enabled={timeLeft > 0} />
+          <TypeBox sentence={sentence} disabled={timeLeft <= 0} baseCursorIndexRef={baseCursorIndexRef} />
         }
         <div className="text-white text-2xl">
           Created by <span className="text-green-400">Jonathan Hana</span>

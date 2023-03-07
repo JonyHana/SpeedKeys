@@ -1,5 +1,5 @@
-backend/node_modules
-backend/dist
+notes.txt
+
 # Keep environment variables out of version control
 backend/.env
 
@@ -12,12 +12,10 @@ frontend/yarn-error.log*
 frontend/pnpm-debug.log*
 frontend/lerna-debug.log*
 
-frontend/node_modules
-frontend/dist
-frontend/dist-ssr
-frontend/*.local
-# Keep environment variables out of version control
-frontend/.env
+node_modules
+dist
+dist-ssr
+*.local
 
 # Editor directories and files
 .vscode
@@ -29,5 +27,3 @@ frontend/.env
 *.njsproj
 *.sln
 *.sw?
-
-notes.txt

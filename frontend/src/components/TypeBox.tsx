@@ -2,7 +2,8 @@ import { ChangeEvent, useEffect, useState, useRef, MouseEvent } from "react";
 
 type TypeBoxProp = {
   sentence: string;
-  enabled: boolean;
+  disabled: boolean;
+  baseCursorIndexRef: React.MutableRefObject<number>;
 };
 
 const TEXT_STATUS_COLORS: { [index: number]: string } = {
@@ -19,10 +20,10 @@ const BG_STATUS_COLORS: { [index: number]: string } = {
   4: 'bg-lime-300',
 }
 
-const TypeBox = ({ sentence, enabled }: TypeBoxProp) => {
+const TypeBox = ({ sentence, disabled, baseCursorIndexRef }: TypeBoxProp) => {
   const [words, setWords] = useState<string[]>([]);
   const [inputText, setInputText] = useState<string>('');
-  const [inputDisabled, setInputDisabled] = useState<boolean>(enabled);
+  const [inputDisabled, setInputDisabled] = useState<boolean>(disabled);
 
   const inputBoxRef = useRef<HTMLInputElement>(null);
   
@@ -35,9 +36,9 @@ const TypeBox = ({ sentence, enabled }: TypeBoxProp) => {
   //const [highlightIndex, setHighlightIndex] = useState<number>(0);
 
   useEffect(() => {
-    setInputDisabled(!enabled);
-    console.log('TypeBox.setInputDisabled');
-  }, [enabled]);
+    setInputDisabled(disabled);
+    console.log('TypeBox.setInputDisabled = ', disabled);
+  }, [disabled]);
 
   // TypeBox initialization
   useEffect(() => {
@@ -92,7 +93,7 @@ const TypeBox = ({ sentence, enabled }: TypeBoxProp) => {
     const globalCursorIndex = baseCursorIndex + localCursorIndex;
     
     if (globalCursorIndex === sentence.length) {
-      //console.log('sentence complete');
+      //console.log('game complete');
       setInputDisabled(true);
       setInputText('');
       setBaseCursorIndex(globalCursorIndex + 1);
@@ -102,6 +103,8 @@ const TypeBox = ({ sentence, enabled }: TypeBoxProp) => {
       setInputText('');
       setBaseCursorIndex(globalCursorIndex);
     }
+    
+    baseCursorIndexRef.current = baseCursorIndex;
     
     //console.log('setCurrentWordIndex(currentWordIndex + 1)');
     setCurrentWordIndex(currentWordIndex + 1);

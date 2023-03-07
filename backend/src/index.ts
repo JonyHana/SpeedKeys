@@ -1,10 +1,10 @@
-import 'dotenv/config';
+require('dotenv').config();
 
 import express, { Request, Response } from 'express';
 import cors from 'cors';
 import { WebSocketServer, WebSocket, RawData } from 'ws';
 import http from 'http';
-import session from 'express-session';
+import session, { MemoryStore } from 'express-session';
 import sentenceGenerator from './utils/sentenceGenerator';
 
 const port = process.env.PORT;
@@ -19,17 +19,18 @@ const wss = new WebSocketServer({
 
 const sessionParser = session({
   secret: process.env.SESSION_SECRET_KEY,
+  resave: false, // Don't save session if unmodified.
+  saveUninitialized: false, // Don't create session until something stored.
+  store: new MemoryStore(), // Reminder: MemoryStore is NOT production ready!
+  rolling: true, // Force the resetting of session identifier cookie. Expiration countdown set to original maxAge.
   cookie: {
-    maxAge: (365 * 24 * 60 * 60) * 1000,
-    secure: (process.env.NODE_ENV === 'production'),
-    sameSite: 'strict', //(process.env.NODE_ENV === 'production' ? 'none' : 'lax')
-  },
-  resave: false,
-  saveUninitialized: false
+    maxAge: 604800000, // 1 week; unit: ms // maxAge: (365 * 24 * 60 * 60) * 1000,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
+  }
 });
 
-const TIME_LEFT = 30;
-const DATE_OBJ = new Date();
+const TIME_LEFT = 10;
 
 // Parse the session on upgrade. This is necessary for req.session to exist when communicating via WebSocket, otherwise it will be undefined.
 httpServer.on('upgrade', function (request: Request, socket, head) {  
@@ -72,9 +73,36 @@ app.get('/api/debugsession', (req: Request, res: Response) => {
   res.status(200).json(req.session);
 });
 
+const endGame = (req: Express.Request) => {
+  req.session.game = null;
+}
+
+const isValidMessage = (req: Express.Request) => {
+  if (!req.session.game) {
+    return false;
+  }
+
+  const timestamp = new Date().getTime();
+
+  console.log(
+    req.session.game.expire, timestamp,
+    (req.session.game.expire ? req.session.game.expire - timestamp : -1)
+  );
+
+  if (
+    req.session.game.expire &&
+    req.session.game.expire < timestamp
+  ) {
+    console.log(`[ws] game expired: ${timestamp - req.session.game.expire} seconds old`);
+    endGame(req);
+    return false;
+  }
+
+  return true;
+}
+
 wss.on('connection', (sock: WebSocket, req: Request) => {
   console.log(`[ws] new user has connected: ${req.sessionID}`);
-  console.log(req.session);
 
   req.session.game = {
     status: 'init'
@@ -82,33 +110,16 @@ wss.on('connection', (sock: WebSocket, req: Request) => {
 
   const sentence = sentenceGenerator();
   
-  // (RESUME)
-  const EndGame = () => {
-    req.session.game = null;
-  }
-  
   sock.on('message', (message: RawData) => {
-    if (!req.session.game) {
-      console.log(`[ws] ERR: req.session.game doesn\'t exist for ${req.sessionID}`);
-      //sock.send('error_init');
-      return;
-    }
-    
-    if (
-      req.session.game.expire &&
-      req.session.game.expire < DATE_OBJ.getTime()
-    ) {
-      console.log(`[ws] game expired: ${DATE_OBJ.getTime() - req.session.game.expire} seconds old`);
-      EndGame();
-      return;
-    }
+    if (!isValidMessage(req)) return;
 
-    const gameEvent = message.toString();
+    const gameData = JSON.parse(message.toString());
+    const gameEvent = gameData.event; //message.toString();
 
     console.log(`[ws] ${req.sessionID} sent: ${gameEvent}`);
 
     if (gameEvent === 'starting') {
-      if (req.session.game.status !== 'init') return;
+      if (req.session.game?.status !== 'init') return;
       
       req.session.game = {
         status: 'starting',
@@ -124,7 +135,7 @@ wss.on('connection', (sock: WebSocket, req: Request) => {
       let counter = 5;
       let gameCountdown = setInterval(() => {
         if (sock.readyState !== sock.CLOSED) {
-          //console.log(`countdown for ${req.sessionID}\nreadyState: ${sock.readyState}\n`);
+          //console.log(`[ws] countdown for ${req.sessionID}\nreadyState: ${sock.readyState}\n`);
           //sock.send('cd=' + counter);
           sock.send(JSON.stringify({ event: 'countdown', countdown: counter }));
 
@@ -134,6 +145,7 @@ wss.on('connection', (sock: WebSocket, req: Request) => {
             if (req.session.game) {
               req.session.game.expire = (new Date()).getTime() + (1000 * TIME_LEFT);
               sock.send(JSON.stringify({ event: 'start', timeLeft: TIME_LEFT }));
+              console.log(`[ws] game began for ${req.sessionID}`);
             }
             else { // this should never happen
               console.log('[ws] ERR: req.session.game === undefined');
@@ -144,15 +156,16 @@ wss.on('connection', (sock: WebSocket, req: Request) => {
           }
         }
         else {
-          //console.log(`sock closed for ${req.sessionID}, clear countdown.`);
+          //console.log(`[ws] sock closed for ${req.sessionID}, clear countdown.`);
           clearInterval(gameCountdown);
         }
       }, 1000);
     }
     else if (gameEvent === 'progress') {
-      if (req.session.game.progress) {
-        req.session.game.progress++;
-        //sock.send(JSON.stringify({ event: 'progress' }));
+      if (req.session.game?.progress) {
+        //if (gameData.baseCursorIndex > sentence.length) return; // User is probably tampering/cheating or game is bugged.
+        req.session.game.progress = gameEvent.baseCursorIndex;
+        console.log(`[ws] (${req.sessionID}) req.session.game.progress = ${req.session.game.progress}`);
       }
       /*else {
         sock.send('error_progress');
@@ -162,7 +175,7 @@ wss.on('connection', (sock: WebSocket, req: Request) => {
 
   sock.on('close', () => {
     console.log(`[ws] user has disconnected: ${req.sessionID}`);
-    EndGame();
+    endGame(req);
   });
 });
 

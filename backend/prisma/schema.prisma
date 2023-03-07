@@ -13,22 +13,5 @@ datasource db {
 model User {
   id        Int     @id @default(autoincrement())
   email     String  @unique
-  name      String?
-  articles  Article[]
-  //role    Role    @default(Member)
-  isAdmin   Boolean
+  name      String
 }
-
-model Article {
-  id          Int     @id @default(autoincrement())
-  title       String
-  content     String?
-  published   Boolean @default(false)
-  author      User    @relation(fields: [authorId], references: [id])
-  authorId    Int
-}
-
-// enum Role {
-//   Member
-//   Admin
-// }
