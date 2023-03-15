@@ -29,18 +29,26 @@ const TypeBox = ({ sentence, disabled, baseCursorIndexRef }: TypeBoxProp) => {
   
   const [baseCursorIndex, setBaseCursorIndex] = useState<number>(0);
   const [currentWordIndex, setCurrentWordIndex] = useState<number>(0);
-  // 0 = incomplete, 1 = correct, 2 = incorrect
-  // Letters will be compared to position index in sentence prop.
+  
+  // Sets the coloring of each letter.
+  //  0 = incomplete, 1 = correct, 2 = incorrect
+  //  Letters will be compared to position index in sentence prop.
   const [lettersStatus, setLettersStatus] = useState<number[]>([]);
+
   // Highlighting from left to cursorIndex.
   //const [highlightIndex, setHighlightIndex] = useState<number>(0);
 
   useEffect(() => {
     setInputDisabled(disabled);
+    
     console.log('TypeBox.setInputDisabled = ', disabled);
+    
+    if (inputBoxRef.current) {
+      inputBoxRef.current.focus();
+    }
   }, [disabled]);
 
-  // TypeBox initialization
+  // TypeBox initialization.
   useEffect(() => {
     const wordsArr = sentence.split(' ');
     const setWordsArr = wordsArr.map((word, key) => {
@@ -58,7 +66,7 @@ const TypeBox = ({ sentence, disabled, baseCursorIndexRef }: TypeBoxProp) => {
     setWords(setWordsArr);
   }, []);
  
-  // Changing letter status
+  // For changing status of letters during gameplay.
   useEffect(() => {
     // To make sure lettersStatus has been initialized.
     if (lettersStatus.length === 0) return;

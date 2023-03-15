@@ -9,7 +9,7 @@ const TypePage = () => {
   const socket = useRef<WebSocket | null>(null);
   const baseCursorIndexRef = useRef<number>(0);
 
-  let timeLeftInterval: number; // Note: This is probably not safe.
+  let timeLeftInterval: number; // Note: This is probably not safe?
 
   useEffect(() => {
     if (typeof sentence === 'undefined') return;
@@ -21,7 +21,7 @@ const TypePage = () => {
     console.log('counting down: ' + countdown);
   }, [countdown]);
 
-  // NOTE: This should only run once.
+  // Note: This should only run once.
   //  The server doesn't need to remind on timeleft. It'll let the user know when time expires.
   useEffect(() => {
     if (typeof timeLeft === 'undefined' || timeLeft === 0) return;
@@ -101,7 +101,7 @@ const TypePage = () => {
           <TypeBox sentence={sentence} disabled={timeLeft <= 0} baseCursorIndexRef={baseCursorIndexRef} />
         }
         <div className="text-white text-2xl">
-          Created by <span className="text-green-400">Jonathan Hana</span>
+          Created by <a href="https://github.com/JonyHana" className="text-green-400">Jonathan Hana</a>
         </div>
       </div>
     </div>
