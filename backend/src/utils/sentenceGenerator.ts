@@ -1,4 +1,17 @@
-export default function sentenceGenerator() {
-  const sentence = 'Lorem ipsum dolor sit amet, consectetur adipisicing elit. Dolores ipsam necessitatibus corporis aperiam provident sed, eius iste, cupiditate fugiat sint aliquam et architecto? Natus asperiores eligendi, est similique quisquam modi!';
-  return sentence.substring(0, sentence.length - (Math.floor(Math.random() * 150)));
+import wordsJSON from './words.json';
+const words: string[] = wordsJSON;
+
+const MAX_WORDS = 10;
+
+export default function sentenceGenerator() { 
+  let count = 0;
+  let sentence = '';
+
+  while (count < MAX_WORDS) {
+    let word = words[Math.floor(Math.random() * words.length)]; 
+    sentence += word + (count < MAX_WORDS - 1 ? ' ' : '');
+    count++;
+  }
+
+  return sentence;
 }

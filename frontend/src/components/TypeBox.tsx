@@ -43,9 +43,10 @@ const TypeBox = ({ sentence, disabled, baseCursorIndexRef }: TypeBoxProp) => {
     
     console.log('TypeBox.setInputDisabled = ', disabled);
     
-    if (inputBoxRef.current) {
-      inputBoxRef.current.focus();
-    }
+    // Need some delay before focusing.
+    setTimeout(() => {
+      inputBoxRef.current?.focus();
+    }, 100);
   }, [disabled]);
 
   // TypeBox initialization.
@@ -72,7 +73,6 @@ const TypeBox = ({ sentence, disabled, baseCursorIndexRef }: TypeBoxProp) => {
     if (lettersStatus.length === 0) return;
 
     const localCursorIndex = inputText.length;
-    //let wordFill = words[currentWordIndex].substring(0, localCursorIndex);
     let localCursorIndex2 = 0;
 
     setLettersStatus(
@@ -87,7 +87,6 @@ const TypeBox = ({ sentence, disabled, baseCursorIndexRef }: TypeBoxProp) => {
         localCursorIndex2++;
         
         return (ltr1 === ltr2) ? 1 : 2;
-        //return (inputText === wordFill) ? 1 : 2;
       })
     );
   }, [inputText]);
@@ -123,6 +122,7 @@ const TypeBox = ({ sentence, disabled, baseCursorIndexRef }: TypeBoxProp) => {
     const localCursorIndex = inTxt.length;
     const currWord = words[currentWordIndex];
     
+    // When the user enters a typo in the word, this prevents the user from progressing to the next word.
     if (localCursorIndex > currWord.length) {
       return false;
     }
@@ -131,19 +131,14 @@ const TypeBox = ({ sentence, disabled, baseCursorIndexRef }: TypeBoxProp) => {
 
     const wordFill = currWord.substring(0, localCursorIndex);
     if (inTxt === wordFill && localCursorIndex === currWord.length) {
+      // Word completed. Move to the next word.
       setInputText('');
       setBaseCursorIndex(baseCursorIndex + localCursorIndex);
     }
-    /*else {
-      console.log('wrong');
-    }*/
   }
   
   const handleClick = (e: MouseEvent<HTMLDivElement>) => {
-    if (inputBoxRef && inputBoxRef.current)
-      inputBoxRef.current.focus();
-    else
-      console.log('[E] no input found');
+    inputBoxRef.current?.focus();
   }
   
   return (
