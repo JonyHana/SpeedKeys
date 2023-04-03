@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import { Route, Routes } from 'react-router-dom';
 import Navbar from "./components/Navbar";
-import TypingPractice from "./components/page/TypePractice";
-import Home from "./components/page/Home";
+import TypingPractice from "./pages/TypePractice";
+import Home from "./pages/Home";
 
-import SocketTest from "./components/page/SocketTest";
+import SocketTest from "./pages/SocketTest";
 
 function App() {
   return (

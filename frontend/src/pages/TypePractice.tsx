@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 
-import TypeBox from "../TypeBox";
+import TypeBox from "../components/TypeBox";
 
 const TypePage = () => {
   const [sentence, setSentence] = useState<string>();
