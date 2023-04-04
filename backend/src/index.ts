@@ -74,6 +74,7 @@ app.get('/api/debugsession', (req: Request, res: Response) => {
 });
 
 const endGame = (req: Express.Request) => {
+  req.session.game?.socket?.send(JSON.stringify({ event: 'game_over' }));
   req.session.game = null;
 }
 
@@ -127,6 +128,7 @@ wss.on('connection', (sock: WebSocket, req: Request) => {
         progress: 0,
         WPM: 0,
         expire: 0,
+        socket: sock
       };
       
       //sock.send('sentence=' + sentence);

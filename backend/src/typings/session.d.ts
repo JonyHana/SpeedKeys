@@ -1,4 +1,5 @@
 import "express-session";
+import { WebSocket } from 'ws';
 
 type GameSession = {
   status: 'init' | 'starting' | 'progress';
@@ -6,6 +7,7 @@ type GameSession = {
   countdown?: number;
   WPM?: number;
   expire?: number;
+  socket?: WebSocket;
 };
 
 declare module "express-session" {

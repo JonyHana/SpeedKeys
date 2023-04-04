@@ -4,12 +4,12 @@ import TypeBox from "../components/TypeBox";
 
 const TypePage = () => {
   const [sentence, setSentence] = useState<string>();
-  const [countdown, setCountdown] = useState<number>();
-  const [timeLeft, setTimeLeft] = useState<number>(0);
+  const [countdown, setCountdown] = useState<number>(-1);
+  const [timeLeft, setTimeLeft] = useState<number>(-1);
   const socket = useRef<WebSocket | null>(null);
   const baseCursorIndexRef = useRef<number>(0);
-
-  let timeLeftInterval: number; // Note: This is probably not safe?
+  
+  const [timeLeftInterval, setTimeLeftInterval] = useState<number | null>(null);
 
   useEffect(() => {
     if (typeof sentence === 'undefined') return;
@@ -17,89 +17,122 @@ const TypePage = () => {
   }, [sentence]);
 
   useEffect(() => {
-    if (typeof countdown === 'undefined') return;
+    if (countdown === -1) return;
     console.log('counting down: ' + countdown);
   }, [countdown]);
 
   // Note: This should only run once.
   //  The server doesn't need to remind on timeleft. It'll let the user know when time expires.
   useEffect(() => {
-    if (typeof timeLeft === 'undefined' || timeLeft === 0) return;
-    
+    if (timeLeft === -1 || timeLeftInterval) return;
+
+    console.log(timeLeft, timeLeftInterval);
+
     console.log('start, time left: ' + timeLeft);
 
-    timeLeftInterval = setInterval(sendProgress, 1000);
+    setTimeLeftInterval(setInterval(sendProgress, 1000));
   }, [timeLeft]);
-  
+ 
   useEffect(() => {
-    if (socket.current !== null) { // on component unmount
-      return (() => {
-        socket.current?.close();
-        socket.current = null;
-      });
-    }
-    else { // on component mount
-      // Reminder: Make sure to use wss:// instead of ws:// in production.
-      socket.current = new WebSocket('ws://localhost:8080')
+    if (socket.current !== null) return;
 
-      socket.current.onopen = (event: Event) => {
-        //console.log("[WebSocket] Connection established. Sending to server..");
-        socket.current?.send(JSON.stringify({ event: 'starting' }));
-      };
+    // Reminder: Make sure to use wss:// instead of ws:// in production.
+    socket.current = new WebSocket('ws://localhost:8080')
+
+    socket.current.onopen = (event: Event) => {
+      //console.log("[WebSocket] Connection established. Sending to server..");
+      socket.current?.send(JSON.stringify({ event: 'starting' }));
+    };
+    
+    socket.current.onmessage = (event: MessageEvent<string>) => {
+      //console.log(`[WebSocket] Data received from server: ${event.data}`);
       
-      socket.current.onmessage = (event: MessageEvent<string>) => {
-        //console.log(`[WebSocket] Data received from server: ${event.data}`);
-        
-        const data = JSON.parse(event.data);
-        console.log('received event:', data.event);
-        
-        switch (data.event) {
-          case 'sentence':
-            setSentence(data.sentence);
-            break;
-          case 'countdown':
-            setCountdown(data.countdown);
-            break;
-          case 'start':
-            console.log(data);
-            setTimeLeft(data.timeLeft);
-            break;
-          case 'game_over':
-            clearInterval(timeLeftInterval);
-          /*case 'progress':
-            break;*/
-        }
-      };
+      const data = JSON.parse(event.data);
+      console.log('received event:', data.event);
       
-      socket.current.onclose = (event: CloseEvent) => {
-        /*if (event.wasClean) {
-          console.log(`[WebSocket] Connection closed cleanly, code=${event.code} reason=${event.reason}`);
-        } else {
-          // e.g. server process killed or network down
-          // event.code is usually 1006 in this case
-          console.log('[WebSocket] Connection died');
-        }*/
-        
-        socket.current = null;
-      };
+      switch (data.event) {
+        case 'sentence':
+          setSentence(data.sentence);
+          break;
+        case 'countdown':
+          setCountdown(data.countdown);
+          break;
+        case 'start':
+          console.log(data);
+          setTimeLeft(data.timeLeft);
+          break;
+        case 'game_over':
+          closeSockConnection();
+        /*case 'progress':
+          break;*/
+      }
+    };
+    
+    socket.current.onclose = (event: CloseEvent) => {
+      /*if (event.wasClean) {
+        console.log(`[WebSocket] Connection closed cleanly, code=${event.code} reason=${event.reason}`);
+      } else {
+        // e.g. server process killed or network down
+        // event.code is usually 1006 in this case
+        console.log('[WebSocket] Connection died');
+      }*/
       
-      /*socket.current.onerror = (event: Event) => {
-        console.log('[WebSocket] error');
-      };*/
+      socket.current = null;
+    };
+    
+    /*socket.current.onerror = (event: Event) => {
+      console.log('[WebSocket] error');
+    };*/
+
+    // On component unmount. Main use is when the user leaves the page.
+    return () => {
+      closeSockConnection();
     }
   }, []);
+
+  const closeSockConnection = () => {
+    socket.current?.close();
+    socket.current = null;
+  }
   
   const sendProgress = () => {
+    if (socket.current === null) {
+      if (timeLeftInterval) {
+        clearInterval(timeLeftInterval);
+      }
+      return;
+    }
+
+    setTimeLeft(timeLeft - 1);
+
     console.log('send progress; baseCursorIndexRef.current = ', baseCursorIndexRef.current);
-    socket.current?.send(JSON.stringify({ event: 'progress', baseCursorIndex: baseCursorIndexRef.current }));
+    socket.current.send(JSON.stringify({ event: 'progress', baseCursorIndex: baseCursorIndexRef.current }));
+  }
+
+  const renderGameStatus = () => {
+    if (countdown !== 0) {
+      return (
+        <span className="text-white font-semibold text-lg">Starting in.. { countdown === -1 ? '' : countdown }</span>
+      );
+    }
+    else {
+      return (
+        <span className="text-white font-semibold text-lg">Time left: { timeLeft }</span>
+      );
+    }
   }
 
   return (
     <div className="h-screen w-screen">
       <div className="grid h-screen place-items-center">
-        {sentence &&
-          <TypeBox sentence={sentence} disabled={timeLeft <= 0} baseCursorIndexRef={baseCursorIndexRef} />
-        }
+        <div className="flex flex-col align-middle justify-center place-items-center">
+          { renderGameStatus() }
+          
+          {sentence &&
+            <TypeBox sentence={sentence} disabled={timeLeft <= 0} baseCursorIndexRef={baseCursorIndexRef} />
+          }
+        </div>
+
         <div className="text-white text-2xl">
           Created by <a href="https://github.com/JonyHana" className="text-green-400">Jonathan Hana</a>
         </div>
