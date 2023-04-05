@@ -5,7 +5,7 @@ type GameSession = {
   status: 'init' | 'starting' | 'progress';
   progress?: number;
   countdown?: number;
-  WPM?: number;
+  startTime?: number;
   expire?: number;
   socket?: WebSocket;
 };

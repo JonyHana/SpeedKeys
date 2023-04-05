@@ -10,7 +10,7 @@ const TEXT_STATUS_COLORS: { [index: number]: string } = {
   0: 'text-neutral-400',
   1: 'text-lime-400',
   2: 'text-red-400',
-  4: 'text-neutral-300',
+  4: 'text-white',
 }
 
 const BG_STATUS_COLORS: { [index: number]: string } = {
