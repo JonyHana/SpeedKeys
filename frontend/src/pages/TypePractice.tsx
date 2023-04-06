@@ -6,7 +6,6 @@ const TypePage = () => {
   const [sentence, setSentence] = useState<string>();
   const [countdown, setCountdown] = useState<number>(-1);
   const [timeLeft, setTimeLeft] = useState<number>(-1);
-  const [displayInfoModal, setDisplayInfoModal] = useState<boolean>(false);
   const [gameOverWPM, setGameOverWPM] = useState<number>(-1);
 
   const socket = useRef<WebSocket | null>(null);
@@ -95,7 +94,6 @@ const TypePage = () => {
   const gameFinished = (wpm: number) => {
     closeSockConnection();
     setGameOverWPM(wpm);
-    console.log('wpm = ', wpm);
   }
 
   const closeSockConnection = () => {
@@ -120,49 +118,24 @@ const TypePage = () => {
   const renderGameStatus = () => {
     if (timeLeft >= 0) { 
       return (
-        <span className="text-white font-semibold text-lg">Time left: { timeLeft }</span>
+        <span className="font-semibold text-lg">Time left: { timeLeft }</span>
       );
     }
     else {
       return (
-        <span className="text-white font-semibold text-lg">Starting in.. { countdown === -1 ? '' : countdown }</span>
+        <span className="font-semibold text-lg">Starting in.. { countdown === -1 ? '' : countdown }</span>
       );
     }
   }
 
-  const renderInfoModal = () => {
-    if (displayInfoModal) {
-      // Modal source: https://flowbite.com/docs/components/modal/
+  const renderGameResults = () => {
+    if (gameOverWPM !== -1) {
       return (
-        <>
-          {/* <!-- Main modal --> */}
-          <div className="fixed top-0 left-0 right-0 z-50 w-full p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-[calc(100%-1rem)] md:h-full">
-              <div className="relative w-full h-full max-w-2xl md:h-auto">
-                  {/* <!-- Modal content --> */}
-                  <div className="relative rounded-lg shadow bg-gray-700">
-                      {/* <!-- Modal header --> */}
-                      <div className="flex items-start justify-between p-4 border-b rounded-t border-gray-600">
-                          <h3 className="text-xl font-semibold text-white">
-                              Game Over!
-                          </h3>
-                          <button onClick={() => setDisplayInfoModal(false)} type="button" className="text-gray-400 bg-transparent rounded-lg text-sm p-1.5 ml-auto inline-flex items-center hover:bg-gray-600 hover:text-white">
-                              <svg aria-hidden="true" className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd"></path></svg>
-                          </button>
-                      </div>
-                      {/* <!-- Modal body --> */}
-                      <div className="p-6 space-y-6">
-                          <p className="text-base leading-relaxed text-gray-200">
-                            Your WPM: {gameOverWPM} 
-                          </p>
-                      </div>
-                      {/* <!-- Modal footer --> */}
-                      <div className="flex items-center p-6 space-x-2 border-t rounded-b border-gray-600">
-                          <button type="button" className="text-white focus:ring-4 focus:outline-none font-medium rounded-lg text-sm px-5 py-2.5 text-center bg-blue-600 hover:bg-blue-700 focus:ring-blue-800">Save Score (for Guests)</button>
-                      </div>
-                  </div>
-              </div>
-          </div>
-        </>
+        <div className="font-semibold text-center">
+          <h2 className="text-orange-400">Game Over!</h2>
+          <h4>-- Results --</h4>
+          <h4>WPM: {gameOverWPM}</h4>
+        </div>
       );
     }
     return null;
@@ -173,14 +146,15 @@ const TypePage = () => {
       <div className="grid h-screen place-items-center">
         <div className="flex flex-col align-middle justify-center place-items-center">
           { renderGameStatus() }
-          { renderInfoModal() }
           
           {sentence &&
             <TypeBox sentence={sentence} disabled={timeLeft <= 0} baseCursorIndexRef={baseCursorIndexRef} />
           }
+          
+          { renderGameResults() }
         </div>
 
-        <div className="text-white text-2xl">
+        <div className="text-2xl">
           Created by <a href="https://github.com/JonyHana" className="text-green-400">Jonathan Hana</a>
         </div>
       </div>

@@ -4,6 +4,10 @@
 @tailwind components;
 @tailwind utilities;
 
+* {
+    @apply text-neutral-300
+}
+
 html, body {
     background-color: #333;
 }
@@ -11,4 +15,19 @@ html, body {
 /* Each letter in a monospaced font occupies the same amount of space, which is what I want for the cursor. */
 .word {
     font-family: 'Inconsolata', monospace;
+}
+
+@layer base {
+  h1 {
+    @apply text-4xl;
+  }
+  h2 {
+    @apply text-3xl;
+  }
+  h3 {
+    @apply text-2xl;
+  }
+  h4 {
+    @apply text-xl;
+  }
 }
