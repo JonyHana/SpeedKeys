@@ -2,6 +2,7 @@ notes.txt
 
 # Keep environment variables out of version control
 backend/.env
+backend/prisma/*.db*
 
 # Logs
 frontend/logs

@@ -6,6 +6,9 @@ import { WebSocketServer } from 'ws';
 import http from 'http';
 import session, { MemoryStore } from 'express-session';
 
+import authMiddleware from './middleware/passport';
+import userRoute from './routes/userRoute';
+
 import { InitTypeGameServer } from './typegame';
 
 const port = process.env.PORT;
@@ -52,11 +55,17 @@ httpServer.on('upgrade', function (request: Request, socket, head) {
   });
 });
 
-app.use(sessionParser);
-
-app.use(cors());
+app.use(cors({
+  origin: process.env.FRONTEND_URL,
+  credentials: true
+}));
 app.use(express.json());
 //app.use(express.urlencoded({ extended: true }));
+
+app.use(sessionParser);
+app.use(authMiddleware);
+
+app.use('/user', userRoute);
 
 InitTypeGameServer(wss);
 

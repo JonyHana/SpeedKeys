@@ -11,10 +11,11 @@ datasource db {
 }
 
 model User {
-  id          Int         @id @default(autoincrement())
-  username    String      @unique
-  password    String
-  benchmarks  Benchmark[]
+  id            Int         @id @default(autoincrement())
+  username      String      @unique
+  password      String
+  password_salt String
+  benchmarks    Benchmark[]
 }
 
 model Benchmark {

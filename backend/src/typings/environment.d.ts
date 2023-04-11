@@ -5,6 +5,7 @@ declare global {
       PORT: number;
       SESSION_SECRET_KEY: string;
       DATABASE_URL: string;
+      FRONTEND_URL: string;
     }
   }
 }
