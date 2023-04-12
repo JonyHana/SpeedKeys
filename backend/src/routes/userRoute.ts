@@ -1,14 +1,20 @@
-import express, { Request, Response } from 'express';
+import express, { NextFunction, Request, Response } from 'express';
 import passport from 'passport';
 
 import { prisma } from '../utils/db';
 import { hashPassword, generateSalt } from '../utils/hashPassword';
+import { Prisma } from '@prisma/client';
 
 const router = express.Router();
 
 type T_RegisterBody = {
   username: string;
   password: string;
+}
+
+const isLoggedIn = async (req: Request, res: Response, next: NextFunction) => {
+  if (req.isAuthenticated()) return next();
+  res.status(401).json({ error: 'Unauthorized, not logged in.' });
 }
 
 router.post('/login',
@@ -19,12 +25,23 @@ router.post('/login',
     }
   ),
   (req: Request, res: Response) => {
-    res.json({ msg: "Successfully logged in" });
+    //res.json({ msg: "Successfully logged in" });
+    res.redirect('/');
   }
 );
 
-router.post('/register', async (req: Request, res: Response) => {
+router.post('/logout', isLoggedIn, (req: Request, res: Response, next: NextFunction) => {
+  req.logout(function(err) {
+    if (err) { return next(err); }
+    //res.redirect('/');
+    res.json([]);
+  });
+});
+
+router.post('/register', async (req: Request, res: Response, next: NextFunction) => {
   const { username, password }: T_RegisterBody = req.body;
+
+  console.log('register req.body -> ', req.body);
 
   let user = await prisma.user.findUnique({
     where: { username }
@@ -48,7 +65,15 @@ router.post('/register', async (req: Request, res: Response) => {
   
   console.log('created user ->', user);
 
-  res.json({ user });
+  req.login(user, function(err) {
+    if (err) return next(err);
+
+    req.session.auth = {
+      username: (user as Prisma.UserCreateInput).username
+    }
+
+    return res.json({ msg: 'logged in' });
+  });
 });
 
 export default router;

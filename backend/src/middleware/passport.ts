@@ -1,10 +1,9 @@
 import express from 'express';
 import passport from 'passport';
 import { Strategy } from 'passport-local';
-import crypto from 'crypto';
 
 import { prisma } from '../utils/db';
-import { hashPassword, verifiedPassword } from '../utils/hashPassword';
+import { verifiedPassword } from '../utils/hashPassword';
 import { Prisma } from '@prisma/client';
 
 const router = express.Router();

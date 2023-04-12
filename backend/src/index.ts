@@ -70,14 +70,20 @@ app.use('/user', userRoute);
 InitTypeGameServer(wss);
 
 app.get('/', (req: Request, res: Response) => {
-  res.status(200).json('index route');
+  console.log('GET / -> ', req.session.auth?.username);
+  if (req.session.auth?.username) {
+    res.json({ username: req.session.auth.username });
+  }
+  else {
+    res.json({ msg: 'Not logged in.' });
+  }
 });
 
-app.get('/api/debugsession', (req: Request, res: Response) => {
-  req.session.randomVarTest = (!req.session.randomVarTest ? 'test123' : undefined);
-  console.log(req.sessionID, req.session);
-  res.status(200).json(req.session);
-});
+// app.get('/api/debugsession', (req: Request, res: Response) => {
+//   req.session.randomVarTest = (!req.session.randomVarTest ? 'test123' : undefined);
+//   console.log(req.sessionID, req.session);
+//   res.status(200).json(req.session);
+// });
 
 httpServer.listen(port, () => {
   console.log(`listening on *:${port}`);

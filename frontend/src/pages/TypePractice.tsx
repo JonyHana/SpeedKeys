@@ -39,7 +39,7 @@ const TypePage = () => {
     if (socket.current !== null) return;
 
     // Reminder: Make sure to use wss:// instead of ws:// in production.
-    socket.current = new WebSocket('ws://localhost:8080')
+    socket.current = new WebSocket(`ws://localhost:${import.meta.env.VITE_API_PORT}`)
 
     socket.current.onopen = (event: Event) => {
       //console.log("[WebSocket] Connection established. Sending to server..");
