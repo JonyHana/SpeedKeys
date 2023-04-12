@@ -3,7 +3,6 @@ import passport from 'passport';
 
 import { prisma } from '../utils/db';
 import { hashPassword, generateSalt } from '../utils/hashPassword';
-import { Prisma } from '@prisma/client';
 
 const router = express.Router();
 
@@ -41,7 +40,7 @@ router.post('/logout', isLoggedIn, (req: Request, res: Response, next: NextFunct
 router.post('/register', async (req: Request, res: Response, next: NextFunction) => {
   const { username, password }: T_RegisterBody = req.body;
 
-  console.log('register req.body -> ', req.body);
+  //console.log('register req.body -> ', req.body);
 
   let user = await prisma.user.findUnique({
     where: { username }
@@ -51,8 +50,8 @@ router.post('/register', async (req: Request, res: Response, next: NextFunction)
   const hashedPassword = hashPassword(password, salt);
 
   if (!hashedPassword) {
-    console.log('error attempting to create user ->', username, salt, hashedPassword);
-    return res.json({ error: "An error occured, couldn't create user profile." });
+    console.log('Error attempting to create user ->', username, salt, hashedPassword);
+    return res.json({ error: 'An error occured, could not create user profile.' });
   }
 
   if (user) {
@@ -63,15 +62,13 @@ router.post('/register', async (req: Request, res: Response, next: NextFunction)
     data: { username, password: hashedPassword, password_salt: salt }
   });
   
-  console.log('created user ->', user);
+  //console.log('created user ->', user);
 
-  req.login(user, function(err) {
+  const userSessionObj = { username: user.username };
+
+  // This will create (req.user) the user field in the request body.
+  req.login(userSessionObj, function(err) {
     if (err) return next(err);
-
-    req.session.auth = {
-      username: (user as Prisma.UserCreateInput).username
-    }
-
     return res.json({ msg: 'logged in' });
   });
 });

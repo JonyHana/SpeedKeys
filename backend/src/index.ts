@@ -10,6 +10,7 @@ import authMiddleware from './middleware/passport';
 import userRoute from './routes/userRoute';
 
 import { InitTypeGameServer } from './typegame';
+import { AuthSession } from './typings/session';
 
 const port = process.env.PORT;
 
@@ -70,9 +71,10 @@ app.use('/user', userRoute);
 InitTypeGameServer(wss);
 
 app.get('/', (req: Request, res: Response) => {
-  console.log('GET / -> ', req.session.auth?.username);
-  if (req.session.auth?.username) {
-    res.json({ username: req.session.auth.username });
+  const user = req.user as AuthSession;
+  //console.log('GET / -> ', req.user, user);
+  if (user) {
+    res.json(user);
   }
   else {
     res.json({ msg: 'Not logged in.' });
