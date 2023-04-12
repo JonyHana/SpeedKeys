@@ -19,7 +19,7 @@ const isLoggedIn = async (req: Request, res: Response, next: NextFunction) => {
 router.post('/login',
   passport.authenticate(
     'local', {
-      failureRedirect: '/login',
+      //failureRedirect: '/login',
       failureMessage: true
     }
   ),
@@ -32,8 +32,7 @@ router.post('/login',
 router.post('/logout', isLoggedIn, (req: Request, res: Response, next: NextFunction) => {
   req.logout(function(err) {
     if (err) { return next(err); }
-    //res.redirect('/');
-    res.json([]);
+    res.redirect('/');
   });
 });
 

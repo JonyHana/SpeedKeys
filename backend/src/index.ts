@@ -74,10 +74,10 @@ app.get('/', (req: Request, res: Response) => {
   const user = req.user as AuthSession;
   //console.log('GET / -> ', req.user, user);
   if (user) {
-    res.json(user);
+    res.json({ username: user.username });
   }
   else {
-    res.json({ msg: 'Not logged in.' });
+    res.json({ error: 'Not logged in.' });
   }
 });
 
