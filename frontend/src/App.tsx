@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Route, Routes } from 'react-router-dom';
+import { Navigate, Route, Routes } from 'react-router-dom';
 
 import Navbar from "./components/Navbar";
 import TypingPractice from "./pages/TypePractice";
@@ -9,6 +9,7 @@ import LoginPage from "./pages/LoginPage";
 
 import { T_UserInfo } from "./types";
 import LogoutPage from "./pages/LogoutPage";
+import UserBenchmarks from "./pages/UserBenchmarks";
 
 function App() {
   const [username, setUsername] = useState<string>();
@@ -42,6 +43,8 @@ function App() {
         <Route path="/testsocket" element={<SocketTest />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/logout" element={<LogoutPage />} />
+        <Route path="/benchmarks/" element={<Navigate to='/' />} />
+        <Route path="/benchmarks/:id" element={<UserBenchmarks />} />
         <Route path="*" element={<span style={{color:'#f00'}}>404 Page Not Found</span>} />
       </Routes>
     </>

@@ -8,9 +8,11 @@ const LogoutPage = () => {
     fetch(`${import.meta.env.VITE_API_URL}/user/logout`, {
       method: 'POST', credentials: 'include'
     })
-    .then((res) => res.json())
-    .then((data) => {
-      console.log(data);
+    .then((res) => {
+      // Redirect to index page.
+      navigate('/');
+      // Need to retrieve auth info after heading to index page.
+      location.reload();
     });
   }, [])
 

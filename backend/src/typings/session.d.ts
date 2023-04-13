@@ -11,13 +11,14 @@ type GameSession = {
   socket?: WebSocket;
 };
 
-export type AuthSession = {
-  username: string;
+type AuthSession = {
+  user: { username: string } 
 }
 
 declare module "express-session" {
   interface SessionData {
     randomVarTest?: string;
     game: GameSession | null;
+    passport: AuthSession;
   }
 }

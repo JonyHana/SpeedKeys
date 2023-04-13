@@ -51,7 +51,7 @@ export function InitTypeGameServer(webSocketServer: any) {
   console.log('type game WebSocketServer loaded.');
 
   webSocketServer.on('connection', (sock: WebSocket, req: Request) => {
-    console.log(`[ws] new user has connected: ${req.sessionID}`);
+    console.log(`[ws] new user has connected: ${req.sessionID}`, req.session);
 
     req.session.game = {
       status: 'init'
@@ -133,7 +133,7 @@ export function InitTypeGameServer(webSocketServer: any) {
     });
 
     sock.on('close', () => {
-      console.log(`[ws] user has disconnected: ${req.sessionID}`);
+      console.log(`[ws] user has disconnected: ${req.sessionID}`, req.session);
       endGame(req);
     });
   });

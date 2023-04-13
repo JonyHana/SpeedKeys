@@ -5,6 +5,7 @@ import { Strategy } from 'passport-local';
 import { prisma } from '../utils/db';
 import { verifiedPassword } from '../utils/hashPassword';
 import { Prisma } from '@prisma/client';
+import { createUserSessionObject } from '../utils/userSessionObject';
 
 const router = express.Router();
 
@@ -44,7 +45,7 @@ passport.use(new Strategy(
 
     if (verifiedPassword(password, user)) {
       console.log('User is verified.');
-      return done(null, user);
+      return done(null, createUserSessionObject(user));
     }
     else {
       console.log('User is not verified. Invalid password.');
