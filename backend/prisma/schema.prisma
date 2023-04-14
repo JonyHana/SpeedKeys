@@ -23,5 +23,6 @@ model Benchmark {
   User        User     @relation(fields: [userId], references: [id])
   userId      Int
   completed   DateTime @default(now())
-  elapsedTime Int
+  elapsedTime Float
+  WPM         Int
 }

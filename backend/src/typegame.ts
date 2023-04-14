@@ -1,26 +1,51 @@
 import { Request } from 'express';
 import { WebSocket, RawData } from 'ws';
 import sentenceGenerator from './utils/sentenceGenerator';
+import { prisma } from './utils/db';
+import { User } from '@prisma/client';
 
 const TIME_LEFT = 60;
 
-const endGame = (req: Express.Request, numOfWords?: number) => {
+const endGame = async (req: Express.Request, numOfWords?: number) => {
   if (!req.session.game) return;
+
+  const game = req.session.game;
 
   if (numOfWords) {
     const timestamp = (new Date()).getTime();
-    const progress = req.session.game.progress as number;
-    const startTime = req.session.game.startTime as number;
+    const progress = game.progress as number;
+    const startTime = game.startTime as number;
 
+    const elapsedTime = (timestamp - startTime) / 1000;
     // https://www.speedtypingonline.com/typing-equations
     //  Note: The reason for 5 as mentioned in the source above could be because "The average word length in English language is 4.7".
-    const calculateWPM = Math.round((progress / 5) / ((timestamp - startTime) / 1000 / 60));
+    const calculateWPM = Math.round((progress / 5) / (elapsedTime / 60));
     console.log('endGame -> user finished with calculatedWPM = ', calculateWPM);
 
-    req.session.game.socket?.send(JSON.stringify({ event: 'game_over', wpm: calculateWPM }));
+    if (req.session.passport) {
+      const user = await prisma.user.findUnique({
+        where: {
+          username: req.session.passport?.user.username
+        }
+      });
+
+      await prisma.benchmark.create({
+        data: {
+          userId: (user as User).id,
+          elapsedTime,
+          WPM: calculateWPM
+        }
+      });
+    }
+
+    //console.log(calculateWPM, elapsedTime);
+
+    game.socket?.send(JSON.stringify({
+      event: 'game_over', WPM: calculateWPM, elapsedTime
+    }));
   }
 
-  req.session.game.socket?.close();
+  game.socket?.close();
   req.session.game = null;
 }
 
@@ -51,7 +76,7 @@ export function InitTypeGameServer(webSocketServer: any) {
   console.log('type game WebSocketServer loaded.');
 
   webSocketServer.on('connection', (sock: WebSocket, req: Request) => {
-    console.log(`[ws] new user has connected: ${req.sessionID}`, req.session);
+    console.log(`[ws] new user has connected: ${req.sessionID}`);
 
     req.session.game = {
       status: 'init'
@@ -116,8 +141,6 @@ export function InitTypeGameServer(webSocketServer: any) {
         }, 1000);
       }
       else if (gameEvent === 'progress') {
-        console.log(gameData.baseCursorIndex, sentence.length);
-
         if (req.session.game?.progress !== undefined) {
           req.session.game.progress = gameData.baseCursorIndex as number;
           console.log(`[ws] (${req.sessionID}) req.session.game.progress = ${req.session.game.progress}`);
@@ -133,7 +156,7 @@ export function InitTypeGameServer(webSocketServer: any) {
     });
 
     sock.on('close', () => {
-      console.log(`[ws] user has disconnected: ${req.sessionID}`, req.session);
+      console.log(`[ws] user has disconnected: ${req.sessionID}`);
       endGame(req);
     });
   });

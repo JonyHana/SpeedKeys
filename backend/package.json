@@ -4,9 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node dist/index.js",
-    "dev": "tsc-watch --onSuccess \"node dist/index.js\"",
-    "seed": "ts-node prisma/seed.ts",
+    "start": "npm run build && node dist/index.js",
+    "dev": "tsc-watch --onSuccess && npm run start",
     "build": "tsc"
   },
   "author": "",

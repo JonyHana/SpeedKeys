@@ -2,11 +2,16 @@ import { useEffect, useState, useRef } from "react";
 
 import TypeBox from "../components/TypeBox";
 
+type T_GameInfo = {
+  WPM: number;
+  elapsedTime: number;
+};
+
 const TypePage = () => {
   const [sentence, setSentence] = useState<string>();
   const [countdown, setCountdown] = useState<number>(-1);
   const [timeLeft, setTimeLeft] = useState<number>(-1);
-  const [gameOverWPM, setGameOverWPM] = useState<number>(-1);
+  const [gameInfo, setGameInfo] = useState<T_GameInfo | null>(null);
 
   const socket = useRef<WebSocket | null>(null);
   const baseCursorIndexRef = useRef<number>(0);
@@ -60,11 +65,10 @@ const TypePage = () => {
           setCountdown(data.countdown);
           break;
         case 'start':
-          console.log(data);
           setTimeLeft(data.timeLeft);
           break;
         case 'game_over':
-          gameFinished(data.wpm);
+          gameFinished(data);
           break;
       }
     };
@@ -91,9 +95,10 @@ const TypePage = () => {
     }
   }, []);
 
-  const gameFinished = (wpm: number) => {
+  const gameFinished = (data: T_GameInfo) => {
     closeSockConnection();
-    setGameOverWPM(wpm);
+    //setGameOverWPM(wpm);
+    setGameInfo(data);
   }
 
   const closeSockConnection = () => {
@@ -129,12 +134,13 @@ const TypePage = () => {
   }
 
   const renderGameResults = () => {
-    if (gameOverWPM !== -1) {
+    if (gameInfo !== null) {
       return (
         <div className="font-semibold text-center">
           <h2 className="text-orange-400">Game Over!</h2>
           <h4>-- Results --</h4>
-          <h4>WPM: {gameOverWPM}</h4>
+          <h4>Words Per Minute: {gameInfo.WPM}</h4>
+          <h4>Elapsed Time (sec): {gameInfo.elapsedTime}</h4>
         </div>
       );
     }
