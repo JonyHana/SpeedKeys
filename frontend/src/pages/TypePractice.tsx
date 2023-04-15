@@ -1,17 +1,13 @@
 import { useEffect, useState, useRef } from "react";
 
 import TypeBox from "../components/TypeBox";
-
-type T_GameInfo = {
-  WPM: number;
-  elapsedTime: number;
-};
+import { T_UserBenchmark } from "../types";
 
 const TypePage = () => {
   const [sentence, setSentence] = useState<string>();
   const [countdown, setCountdown] = useState<number>(-1);
   const [timeLeft, setTimeLeft] = useState<number>(-1);
-  const [gameInfo, setGameInfo] = useState<T_GameInfo | null>(null);
+  const [gameInfo, setGameInfo] = useState<T_UserBenchmark | null>(null);
 
   const socket = useRef<WebSocket | null>(null);
   const baseCursorIndexRef = useRef<number>(0);
@@ -95,7 +91,7 @@ const TypePage = () => {
     }
   }, []);
 
-  const gameFinished = (data: T_GameInfo) => {
+  const gameFinished = (data: T_UserBenchmark) => {
     closeSockConnection();
     //setGameOverWPM(wpm);
     setGameInfo(data);

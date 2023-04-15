@@ -12,10 +12,6 @@ type T_RegisterGetReqBody = {
   password: string;
 }
 
-type T_BenchmarkPostReqBody = {
-  username: string;
-}
-
 const isLoggedIn = async (req: Request, res: Response, next: NextFunction) => {
   if (req.isAuthenticated()) return next();
   res.status(401).json({ error: 'Unauthorized, not logged in.' });
@@ -76,7 +72,7 @@ router.post('/register', async (req: Request, res: Response, next: NextFunction)
   });
 });
 
-router.get('/benchmarks', async (req: Request, res: Response) => {
+router.get('/benchmarks/:username', async (req: Request, res: Response) => {
   const { username } = req.params;
 
   /*const user = await prisma.user.findUnique({
@@ -84,20 +80,19 @@ router.get('/benchmarks', async (req: Request, res: Response) => {
   });*/
 
   const benchmarks = await prisma.benchmark.findMany({
+    take: 40, // Take the past (by 'desc') 40 typing benchmarks.
     where: { User: { username } },
     select: {
       completed: true, 
-      elapsedTime: true
+      elapsedTime: true,
+      WPM: true
+    },
+    orderBy: {
+      completed: 'desc'
     }
   });
 
-  console.log(benchmarks);
-
-  if (!benchmarks) {
-    return res.json({ msg: 'User has no benchmarks.' });
-  }
-
-  res.json(benchmarks);
+  res.json(benchmarks.reverse());
 });
 
 export default router;

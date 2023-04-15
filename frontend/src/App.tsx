@@ -44,7 +44,7 @@ function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/logout" element={<LogoutPage />} />
         <Route path="/benchmarks/" element={<Navigate to='/' />} />
-        <Route path="/benchmarks/:id" element={<UserBenchmarks />} />
+        <Route path="/benchmarks/:username" element={<UserBenchmarks />} />
         <Route path="*" element={<span style={{color:'#f00'}}>404 Page Not Found</span>} />
       </Routes>
     </>
