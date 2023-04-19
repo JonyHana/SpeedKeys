@@ -72,27 +72,4 @@ router.post('/register', async (req: Request, res: Response, next: NextFunction)
   });
 });
 
-router.get('/benchmarks/:username', async (req: Request, res: Response) => {
-  const { username } = req.params;
-
-  /*const user = await prisma.user.findUnique({
-    where: { id: userId }
-  });*/
-
-  const benchmarks = await prisma.benchmark.findMany({
-    take: 40, // Take the past (by 'desc') 40 typing benchmarks.
-    where: { User: { username } },
-    select: {
-      completed: true, 
-      elapsedTime: true,
-      WPM: true
-    },
-    orderBy: {
-      completed: 'desc'
-    }
-  });
-
-  res.json(benchmarks.reverse());
-});
-
 export default router;

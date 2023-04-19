@@ -129,6 +129,10 @@ const TypePage = () => {
     }
   }
 
+  const refreshPage = () => {
+    window.location.href = '/practice';
+  }
+
   const renderGameResults = () => {
     if (gameInfo !== null) {
       return (
@@ -137,6 +141,13 @@ const TypePage = () => {
           <h4>-- Results --</h4>
           <h4>Words Per Minute: {gameInfo.WPM}</h4>
           <h4>Elapsed Time (sec): {gameInfo.elapsedTime}</h4>
+
+          <button
+            className="p-1.5 m-2 rounded-sm font-semibold text-white bg-lime-700"
+            onClick={refreshPage}
+          >
+            Replay?
+          </button>
         </div>
       );
     }
@@ -144,21 +155,15 @@ const TypePage = () => {
   }
 
   return (
-    <div className="h-screen w-screen">
-      <div className="grid h-screen place-items-center">
-        <div className="flex flex-col align-middle justify-center place-items-center">
-          { renderGameStatus() }
-          
-          {sentence &&
-            <TypeBox sentence={sentence} disabled={timeLeft <= 0} baseCursorIndexRef={baseCursorIndexRef} />
-          }
-          
-          { renderGameResults() }
-        </div>
-
-        <div className="text-2xl">
-          Created by <a href="https://github.com/JonyHana" className="text-green-400">Jonathan Hana</a>
-        </div>
+    <div className="flex flex-col h-[calc(100vh-200px)] w-full place-items-center justify-center">
+      <div className="flex flex-col place-items-center">
+        { renderGameStatus() }
+        
+        {sentence &&
+          <TypeBox sentence={sentence} disabled={timeLeft <= 0} baseCursorIndexRef={baseCursorIndexRef} />
+        }
+        
+        { renderGameResults() }
       </div>
     </div>
   )

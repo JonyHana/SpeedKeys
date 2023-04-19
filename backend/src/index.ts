@@ -8,6 +8,7 @@ import session, { MemoryStore } from 'express-session';
 
 import authMiddleware from './middleware/passport';
 import userRoute from './routes/userRoute';
+import benchmarksRoute from './routes/benchmarksRoute';
 
 import { InitTypeGameServer } from './typegame';
 
@@ -66,6 +67,7 @@ app.use(sessionParser);
 app.use(authMiddleware);
 
 app.use('/user', userRoute);
+app.use('/benchmarks', benchmarksRoute);
 
 InitTypeGameServer(wss);
 
