@@ -5,12 +5,9 @@ import { prisma } from '../utils/db';
 import { hashPassword, generateSalt } from '../utils/hashPassword';
 import { createUserSessionObject } from '../utils/userSessionObject';
 
-const router = express.Router();
+import { RegisterGetReqBodySchema, T_RegisterGetReqBody } from '../typings/types';
 
-type T_RegisterGetReqBody = {
-  username: string;
-  password: string;
-}
+const router = express.Router();
 
 const isLoggedIn = async (req: Request, res: Response, next: NextFunction) => {
   if (req.isAuthenticated()) return next();
@@ -40,6 +37,13 @@ router.post('/logout', isLoggedIn, (req: Request, res: Response, next: NextFunct
 router.post('/register', async (req: Request, res: Response, next: NextFunction) => {
   const { username, password }: T_RegisterGetReqBody = req.body;
 
+  const dataCheck = RegisterGetReqBodySchema.safeParse({ username, password });
+  //console.log(dataCheck, { username, password });
+  if (!dataCheck.success) {
+    console.log('Zod validation error -> ', dataCheck, dataCheck.error);
+    return res.json({ registerError: dataCheck.error.errors[0].message });
+  }
+
   //console.log('register req.body -> ', req.body);
 
   let user = await prisma.user.findUnique({
@@ -47,7 +51,7 @@ router.post('/register', async (req: Request, res: Response, next: NextFunction)
   });
 
   if (user) {
-    return res.json({ registerError: true });
+    return res.json({ registerError: 'That username is already taken.' });
   }
 
   const salt = generateSalt(16);

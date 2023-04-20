@@ -29,11 +29,9 @@ const LoginPage = () => {
     }
     else { // Either registration error or success.
       const data = await res.json();
-      console.log(data);
 
       if (data.registerError) {
-        //console.log('Registration error ->', data.error);
-        setErrorMsg('Invalid username. That username already exists.');
+        setErrorMsg(data.registerError);
         return;
       }
 
