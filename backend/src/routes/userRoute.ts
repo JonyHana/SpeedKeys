@@ -46,17 +46,12 @@ router.post('/register', async (req: Request, res: Response, next: NextFunction)
     where: { username }
   });
 
+  if (user) {
+    return res.json({ registerError: true });
+  }
+
   const salt = generateSalt(16);
   const hashedPassword = hashPassword(password, salt);
-
-  if (!hashedPassword) {
-    console.log('Error attempting to create user ->', username, salt, hashedPassword);
-    return res.json({ error: 'An error occured, could not create user profile.' });
-  }
-
-  if (user) {
-    return res.json({ error: "That username already exists." });
-  }
 
   user = await prisma.user.create({
     data: { username, password: hashedPassword, password_salt: salt }
@@ -68,7 +63,7 @@ router.post('/register', async (req: Request, res: Response, next: NextFunction)
   //  But it's best to use req.session instead since req.user doesn't seem to work with the WebSocket server.
   req.login(createUserSessionObject(user), function(err) {
     if (err) return next(err);
-    return res.json({ msg: 'logged in' });
+    return res.json({ loggedIn: true });
   });
 });
 

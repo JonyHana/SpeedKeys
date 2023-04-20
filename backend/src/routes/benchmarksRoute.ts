@@ -1,11 +1,11 @@
-import express, { NextFunction, Request, Response } from 'express';
+import express, { Request, Response } from 'express';
 import { prisma } from '../utils/db';
 
 const router = express.Router();
 
 router.get('/', async (req: Request, res: Response) => {
   const benchmarks = await prisma.benchmark.findMany({
-    take: 25,
+    take: 10,
     select: {
       WPM: true,
       completed: true,

@@ -37,19 +37,19 @@ passport.use(new Strategy(
       });
     
     if (!user) {
-      console.log('Could not find user.');
-      return done(null, false, { message: 'Incorrect username or password.' });
+      //console.log('Could not find user.');
+      return done(null, false);
     }
     
-    console.log('check verify ->', username, password, '?', user.username, user.password, user.password_salt);
+    //console.log('check verify ->', username, password, '?', user.username, user.password, user.password_salt);
 
     if (verifiedPassword(password, user)) {
-      console.log('User is verified.');
+      //console.log('User is verified.');
       return done(null, createUserSessionObject(user));
     }
     else {
-      console.log('User is not verified. Invalid password.');
-      return done(null, false, { message: 'Incorrect username or password.' });
+      //console.log('User is not verified. Invalid password.');
+      return done(null, false);
     }
   }
 ));

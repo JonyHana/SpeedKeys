@@ -1,18 +1,13 @@
 import { useEffect } from "react"
-import { useNavigate } from "react-router-dom"
 
 const LogoutPage = () => {
-  const navigate = useNavigate();
- 
   useEffect(() => {
     fetch(`${import.meta.env.VITE_API_URL}/user/logout`, {
       method: 'POST', credentials: 'include'
     })
     .then((res) => {
-      // Redirect to index page.
-      navigate('/');
-      // Need to retrieve auth info after heading to index page.
-      location.reload();
+      // Redirect to index page. Need to do a full refresh instead of useNavigate to obtain auth info.
+      window.location.href = '/';
     });
   }, [])
 
