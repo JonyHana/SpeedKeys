@@ -1,5 +1,11 @@
 import { z } from 'zod';
 
+export type T_CreateBenchmark = {
+  username: string;
+  elapsedTime: number;
+  WPM: number;
+};
+
 export type T_UserSession = {
   username: string;
 };

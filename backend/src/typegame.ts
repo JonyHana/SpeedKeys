@@ -1,8 +1,7 @@
 import { Request } from 'express';
 import { WebSocket, RawData } from 'ws';
 import sentenceGenerator from './utils/sentenceGenerator';
-import { prisma } from './utils/db';
-import { User } from '@prisma/client';
+import { createBenchmark } from './controllers/benchmarksController';
 
 const TIME_LEFT = 60;
 
@@ -23,18 +22,10 @@ const endGame = async (req: Express.Request, numOfWords?: number) => {
     console.log('endGame -> user finished with calculatedWPM = ', calculateWPM);
 
     if (req.session.passport) {
-      const user = await prisma.user.findUnique({
-        where: {
-          username: req.session.passport?.user.username
-        }
-      });
-
-      await prisma.benchmark.create({
-        data: {
-          userId: (user as User).id,
-          elapsedTime,
-          WPM: calculateWPM
-        }
+      createBenchmark({
+        username: req.session.passport.user.username,
+        elapsedTime,
+        WPM: calculateWPM
       });
     }
 
