@@ -38,9 +38,9 @@ const TypePage = () => {
  
   useEffect(() => {
     if (socket.current !== null) return;
-
-    // Reminder: Make sure to use wss:// instead of ws:// in production.
-    socket.current = new WebSocket(`ws://localhost:${import.meta.env.VITE_API_PORT}`)
+    
+    const protocol = import.meta.env.MODE === 'production' ? 'wss' : 'ws';
+    socket.current = new WebSocket(`${protocol}://localhost:${import.meta.env.VITE_API_PORT}`)
 
     socket.current.onopen = (event: Event) => {
       //console.log("[WebSocket] Connection established. Sending to server..");
@@ -69,23 +69,14 @@ const TypePage = () => {
       }
     };
     
-    socket.current.onclose = (event: CloseEvent) => {
-      /*if (event.wasClean) {
-        console.log(`[WebSocket] Connection closed cleanly, code=${event.code} reason=${event.reason}`);
-      } else {
-        // e.g. server process killed or network down
-        // event.code is usually 1006 in this case
-        console.log('[WebSocket] Connection died');
-      }*/
-      
+    socket.current.onclose = (event: CloseEvent) => { 
       socket.current = null;
     };
-    
-    /*socket.current.onerror = (event: Event) => {
-      console.log('[WebSocket] error');
-    };*/
 
     // On component unmount. Main use is when the user leaves the page.
+    // Note that Firefox has issues with this when in frontend dev mode,
+    //  since React runs twice due to StrictMode.
+    //  It gives a "websocket was interrupted while page is loading" error.
     return () => {
       closeSockConnection();
     }

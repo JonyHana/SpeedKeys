@@ -41,7 +41,7 @@ router.post('/register', async (req: Request, res: Response, next: NextFunction)
   const registerObj = await registerUser(username, password);
 
   if (registerObj.registerError) {
-    res.json({ registerError: registerObj.registerError });
+    return res.json({ registerError: registerObj.registerError });
   }
 
   // This will create (req.user) the user field in the request body.

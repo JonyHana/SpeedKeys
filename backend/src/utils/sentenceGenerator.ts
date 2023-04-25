@@ -1,7 +1,7 @@
 import wordsJSON from './words.json';
 const words: string[] = wordsJSON;
 
-const MAX_WORDS = 10;
+const MAX_WORDS = 30;
 
 export default function sentenceGenerator() { 
   let count = 0;

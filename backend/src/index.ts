@@ -11,6 +11,8 @@ import userRoute from './routes/userRoute';
 import benchmarksRoute from './routes/benchmarksRoute';
 
 import { InitTypeGameServer } from './typegame';
+import { RedisClientType, createClient } from 'redis';
+import RedisStore from 'connect-redis';
 
 const port = process.env.PORT;
 
@@ -22,12 +24,39 @@ const wss = new WebSocketServer({
   noServer: true,
 });
 
+let redisClient: RedisClientType | null = null;
+if (process.env.REDIS_URL) {
+  redisClient = createClient({ url: process.env.REDIS_URL });
+  redisClient
+    .connect()
+    .catch((e) => {
+      console.log('[Redis Error] -> ', e);
+      redisClient?.disconnect();
+      redisClient = null;
+    })
+    .finally(() => {
+      if (redisClient === null) {
+        throw new Error('Error occured while connecting to Redis. Exiting..');
+      }
+      else {
+        console.log('Connected to Redis @ ', process.env.REDIS_URL);
+      }
+    });
+}
+
 const sessionParser = session({
   secret: process.env.SESSION_SECRET_KEY,
   resave: false, // Don't save session if unmodified.
   saveUninitialized: false, // Don't create session until something stored.
-  store: new MemoryStore(), // Reminder: MemoryStore is NOT production ready!
-  rolling: true, // Force the resetting of session identifier cookie. Expiration countdown set to original maxAge.
+  store: (
+    !redisClient
+    ? new MemoryStore()
+    : new RedisStore({
+      client: redisClient,
+      prefix: "myapp:"
+    })
+  ),
+  proxy: process.env.NODE_ENV === 'production',
   cookie: {
     maxAge: 604800000, // 1 week; unit: ms // maxAge: (365 * 24 * 60 * 60) * 1000,
     secure: process.env.NODE_ENV === 'production',

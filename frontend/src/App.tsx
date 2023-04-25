@@ -4,7 +4,6 @@ import { Navigate, Route, Routes } from 'react-router-dom';
 import Navbar from "./components/Navbar";
 import TypingPractice from "./pages/TypePractice";
 import Home from "./pages/Home";
-import SocketTest from "./pages/SocketTest";
 import LoginPage from "./pages/LoginPage";
 
 import { T_UserInfo } from "./types";
@@ -40,7 +39,6 @@ function App() {
       <Routes>
         <Route path="/" element={<Home username={username} />} />
         <Route path="/practice" element={<TypingPractice />} />
-        <Route path="/testsocket" element={<SocketTest />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/logout" element={<LogoutPage />} />
         <Route path="/benchmarks/" element={<Navigate to='/' />} />
