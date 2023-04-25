@@ -21,12 +21,12 @@ function App() {
     .then((res) => res.json())
     .then((data: T_UserInfo) => {
       if (data.username) {
-        console.log('User authed', data);
+        //console.log('User authed', data);
         setUsername(data.username);
       }
-      else {
-        console.log('User not authenticated');
-      }
+//      else {
+//        console.log('User not authenticated');
+//      }
     })
     .catch((e) => {
       console.warn('Auth error occured ->', e);

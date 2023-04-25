@@ -41,7 +41,7 @@ const TypeBox = ({ sentence, disabled, baseCursorIndexRef }: TypeBoxProp) => {
   useEffect(() => {
     setInputDisabled(disabled);
     
-    console.log('TypeBox.setInputDisabled = ', disabled);
+    //console.log('TypeBox.setInputDisabled = ', disabled);
     
     // Need some delay before focusing.
     setTimeout(() => {

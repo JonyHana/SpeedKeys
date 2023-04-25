@@ -16,12 +16,12 @@ const TypePage = () => {
 
   useEffect(() => {
     if (typeof sentence === 'undefined') return;
-    console.log('sentence provided: ' + sentence);
+    //console.log('sentence provided: ' + sentence);
   }, [sentence]);
 
   useEffect(() => {
     if (countdown === -1) return;
-    console.log('counting down: ' + countdown);
+    //console.log('counting down: ' + countdown);
   }, [countdown]);
 
   // Note: This should only run once.
@@ -31,7 +31,7 @@ const TypePage = () => {
   useEffect(() => {
     if (timeLeft === -1 || timeLeftInterval) return;
 
-    console.log('time left: ' + timeLeft);
+    //console.log('time left: ' + timeLeft);
 
     setTimeLeftInterval(setInterval(sendProgress, 1000));
   }, [timeLeft]);
@@ -50,7 +50,7 @@ const TypePage = () => {
       //console.log(`[WebSocket] Data received from server: ${event.data}`);
       
       const data = JSON.parse(event.data);
-      console.log('received event:', data.event);
+      //console.log('received event:', data.event);
       
       switch (data.event) {
         case 'sentence':
@@ -102,7 +102,7 @@ const TypePage = () => {
 
     setTimeLeft((prevValue) => prevValue - 1);
 
-    console.log('send progress; baseCursorIndexRef.current = ', baseCursorIndexRef.current);
+    //console.log('send progress; baseCursorIndexRef.current = ', baseCursorIndexRef.current);
     socket.current.send(JSON.stringify({ event: 'progress', baseCursorIndex: baseCursorIndexRef.current }));
   }
 
