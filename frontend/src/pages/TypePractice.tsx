@@ -39,8 +39,7 @@ const TypePage = () => {
   useEffect(() => {
     if (socket.current !== null) return;
     
-    const protocol = import.meta.env.MODE === 'production' ? 'wss' : 'ws';
-    socket.current = new WebSocket(`${protocol}://localhost:${import.meta.env.VITE_API_PORT}`)
+    socket.current = new WebSocket(`${import.meta.env.VITE_API_WSS}`);
 
     socket.current.onopen = (event: Event) => {
       //console.log("[WebSocket] Connection established. Sending to server..");
